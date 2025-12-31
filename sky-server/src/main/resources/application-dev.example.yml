@@ -1,0 +1,14 @@
+sky:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: your_host
+    port: your_port
+    database: your_database
+    username: your_username
+    password: your_password
+
+  aliyun:
+    oss:
+      endpoint: your_endpoint
+      bucket-name: your_bucket_name
+      region: your_region
