@@ -3,7 +3,9 @@ package com.sky.mapper;
 import com.sky.annotation.AutoFill;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper
@@ -23,4 +25,18 @@ public interface SetmealMapper {
      */
     @AutoFill(OperationType.INSERT)
     void insert(Setmeal setmeal);
+
+    /**
+     * 根据主键id查询套餐
+     * @param id
+     */
+    @Select("select * from setmeal where id = #{id}")
+    Setmeal getById(Long id);
+
+    /**
+     * 根据主键id删除套餐
+     * @param id
+     */
+    @Delete("delete from setmeal where id = #{id}")
+    void deleteById(Long id);
 }
