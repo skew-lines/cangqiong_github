@@ -34,17 +34,25 @@ public interface SetmealDishMapper {
     List<SetmealVO> pageQuery(SetmealPageQueryDTO setmealPageQueryDTO);
 
     /**
-     * 根据SetmealId删除套餐菜品数据
+     * 根据setmealId删除套餐菜品数据
      * @param setmealId
      */
     @Delete("delete from setmeal_dish where setmeal_id = #{setmealId}")
     void deleteBySetmealId(Long setmealId);
 
     /**
-     * 根据SetmealId获取套餐关联的菜品数据
+     * 根据setmealId获取套餐菜品关联表数据
      * @param setmealId
      * @return
      */
     @Select("select * from setmeal_dish where setmeal_id = #{setmealId}")
     List<SetmealDish> getBySetmealId(Long setmealId);
+
+    /**
+     * 根据setmealId获取套餐关联的菜品id
+     * @param setmealId
+     * @return
+     */
+    @Select("select dish_id from setmeal_dish where setmeal_id = #{setmealId}")
+    List<Long> getDishIdsBySetmealId(Long setmealId);
 }

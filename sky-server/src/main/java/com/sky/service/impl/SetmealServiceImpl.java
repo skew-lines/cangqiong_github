@@ -6,9 +6,12 @@ import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
+import com.sky.entity.Dish;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.SetmealEnableFailedException;
+import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
@@ -29,6 +32,9 @@ public class SetmealServiceImpl implements SetmealService {
 
     @Autowired
     private SetmealDishMapper setmealDishMapper;
+
+    @Autowired
+    private DishMapper dishMapper;
 
     /**
      * 新增套餐
@@ -123,6 +129,38 @@ public class SetmealServiceImpl implements SetmealService {
             //添加所关联的套餐id
             setmealDishes.forEach(setmealDish -> setmealDish.setSetmealId(setmealDTO.getId()));
             setmealDishMapper.insertBatch(setmealDishes);
+        }
+    }
+
+    /**
+     * 套餐起售、停售
+     * @param status
+     * @param id
+     */
+    public void changeStatus(Integer status, Long id) {
+        //停售直接操作就行
+        if(status == StatusConstant.DISABLE) {
+            setmealMapper.update(Setmeal.builder().status(status).id(id).build());
+        }
+        //起售
+        if(status == StatusConstant.ENABLE) {
+
+            //先查看套餐关联的菜品的状态，如果有停售的就返回错误
+//            //获取关联的菜品ids
+//            List<Long> dishIds = setmealDishMapper.getDishIdsBySetmealId(id);
+//
+//            //获取关联的菜品
+//            List<Dish> dishes = dishMapper.getByIds(dishIds);
+            List<Dish> dishes = dishMapper.getBySetmealId(id);
+
+            dishes.forEach(dish -> {
+                if (dish.getStatus().equals(StatusConstant.DISABLE)) {
+                    throw new SetmealEnableFailedException(MessageConstant.SETMEAL_ENABLE_FAILED);
+                }
+            });
+
+            //修改状态
+            setmealMapper.update(Setmeal.builder().status(status).id(id).build());
         }
     }
 
