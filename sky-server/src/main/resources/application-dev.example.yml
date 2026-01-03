@@ -12,3 +12,7 @@ sky:
       endpoint: your_endpoint
       bucket-name: your_bucket_name
       region: your_region
+
+  wechat:
+    appid: your_appid
+    secret: your_secret
