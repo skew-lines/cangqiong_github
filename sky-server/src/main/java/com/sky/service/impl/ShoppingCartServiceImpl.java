@@ -1,6 +1,5 @@
 package com.sky.service.impl;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.sky.context.BaseContext;
 import com.sky.dto.ShoppingCartDTO;
 import com.sky.entity.Dish;
@@ -40,6 +39,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         //判断当前加入购物车的菜品/套餐是否已经存在
         ShoppingCart shoppingCart = new ShoppingCart();
         BeanUtils.copyProperties(shoppingCartDTO,shoppingCart);
+        //设置用户id
         Long userId = BaseContext.getCurrentId();
         shoppingCart.setUserId(userId);
 
@@ -49,7 +49,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             ShoppingCart cart = list.get(0);
             cart.setNumber(cart.getNumber() + 1);
             //数据库更新
-            shoppingCartMapper.updateById(cart);
+            shoppingCartMapper.updateNumberById(cart);
         } else {
             //不存在，则插入数据
             Long dishId = shoppingCartDTO.getDishId();
@@ -94,5 +94,32 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Override
     public void cleanShoppingCart() {
         shoppingCartMapper.deleteByUserId(BaseContext.getCurrentId());
+    }
+
+    /**
+     * 删除购物车中一个商品
+     * @param shoppingCartDTO
+     */
+    public void deleteSub(ShoppingCartDTO shoppingCartDTO) {
+        //如果个数 > 1 个数-1， 如果个数 == 1，删除
+        //先查询对应的记录,其实返回的最多只有一条数据,因为是删除所以肯定有且只有一条数据返回
+        ShoppingCart shoppingCart = new ShoppingCart();
+        BeanUtils.copyProperties(shoppingCartDTO,shoppingCart);
+        //设置用户id
+        Long userId = BaseContext.getCurrentId();
+        shoppingCart.setUserId(userId);
+        List<ShoppingCart> list = shoppingCartMapper.list(shoppingCart);
+        if(list != null && !list.isEmpty()) {
+            //获得数据
+            ShoppingCart cart = list.get(0);
+            //个数只有一个
+            if(cart.getNumber() == 1) {
+                shoppingCartMapper.deleteById(cart.getId());
+            }
+            else {
+                cart.setNumber(cart.getNumber() - 1);
+                shoppingCartMapper.updateNumberById(cart);
+            }
+        }
     }
 }
