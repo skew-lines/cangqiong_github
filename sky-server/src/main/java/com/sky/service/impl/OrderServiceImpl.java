@@ -50,6 +50,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private OrderService orderService;
 
     /**
      * 用户下单
@@ -382,11 +384,53 @@ public class OrderServiceImpl implements OrderService {
             log.info("申请退款：{}", refund);
         }
         */
-
+        //修改支付状态
+        if(orders.getPayStatus() == Orders.PAID) {
+            orders.setPayStatus(Orders.REFUND);
+        }
 
         // 拒单需要退款，根据订单id更新订单状态、拒单原因、取消时间
         orders.setStatus(Orders.CANCELLED);
         orders.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+        orders.setCancelTime(LocalDateTime.now());
+        orderMapper.update(orders);
+
+    }
+
+    /**
+     * 取消订单
+     * @param ordersCancelDTO
+     */
+    public void cancel(OrdersCancelDTO ordersCancelDTO) {
+        Orders orders = orderMapper.getById(ordersCancelDTO.getId());
+        //如果订单不存在或者为已完成状态或者为取消状态
+        if(orders == null || orders.getStatus().equals(Orders.COMPLETED)|| orders.getStatus().equals(Orders.CANCELLED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        //如果已经支付需要退款
+        /*
+        //支付状态
+        Integer payStatus = orders.getPayStatus();
+        if (payStatus == Orders.PAID) {
+            //用户已支付，需要退款
+            String refund = weChatPayUtil.refund(
+                    orders.getNumber(),
+                    orders.getNumber(),
+                    new BigDecimal(0.01),
+                    new BigDecimal(0.01));
+            log.info("申请退款：{}", refund);
+        }
+        */
+
+        //修改支付状态
+        if(orders.getPayStatus() == Orders.PAID) {
+            orders.setPayStatus(Orders.REFUND);
+        }
+
+        // 取消需要退款，根据订单id更新订单状态、取消订单原因、取消时间
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelReason(ordersCancelDTO.getCancelReason());
         orders.setCancelTime(LocalDateTime.now());
         orderMapper.update(orders);
 
