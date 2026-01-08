@@ -16,3 +16,9 @@ sky:
   wechat:
     appid: your_appid
     secret: your_secret
+
+  shop:
+    address: your_address
+
+  baidu:
+    ak: your_baidu_ak
