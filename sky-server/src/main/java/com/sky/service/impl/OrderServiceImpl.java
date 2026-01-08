@@ -435,4 +435,19 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.update(orders);
 
     }
+
+    /**
+     * 派送订单
+     * @param id
+     */
+    public void delivery(Long id) {
+        Orders orders = orderMapper.getById(id);
+        //如果订单不存在或者不为待派送状态
+        if(orders == null || !orders.getStatus().equals(Orders.CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        //修改订单状态
+        orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
+        orderMapper.update(orders);
+    }
 }
