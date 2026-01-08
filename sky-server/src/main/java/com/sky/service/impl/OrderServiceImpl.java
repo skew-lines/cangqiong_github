@@ -1,15 +1,10 @@
 package com.sky.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
-import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersConfirmDTO;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
@@ -29,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -359,5 +353,42 @@ public class OrderServiceImpl implements OrderService {
                 .status(Orders.CONFIRMED)
                 .build();
         orderMapper.update(orders);
+    }
+
+    /**
+     * 拒单
+     *
+     * @param ordersRejectionDTO
+     */
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO) {
+        Orders orders = orderMapper.getById(ordersRejectionDTO.getId());
+        //如果订单不存在或者不为待接单状态
+        if(orders == null || !orders.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+
+        //如果已经支付需要退款
+        /*
+        //支付状态
+        Integer payStatus = orders.getPayStatus();
+        if (payStatus == Orders.PAID) {
+            //用户已支付，需要退款
+            String refund = weChatPayUtil.refund(
+                    orders.getNumber(),
+                    orders.getNumber(),
+                    new BigDecimal(0.01),
+                    new BigDecimal(0.01));
+            log.info("申请退款：{}", refund);
+        }
+        */
+
+
+        // 拒单需要退款，根据订单id更新订单状态、拒单原因、取消时间
+        orders.setStatus(Orders.CANCELLED);
+        orders.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+        orders.setCancelTime(LocalDateTime.now());
+        orderMapper.update(orders);
+
     }
 }
