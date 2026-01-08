@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -236,5 +237,40 @@ public class OrderServiceImpl implements OrderService {
             orders.setCancelReason("用户取消");
             orders.setCancelTime(LocalDateTime.now());
             orderMapper.update(orders);
+    }
+
+    /**
+     * 用户再来一单
+     * @param id
+     */
+    public void repetition(Long id) {
+        //获取用户id
+        Long userId = BaseContext.getCurrentId();
+        //获取订单信息
+        Orders orders = orderMapper.getById(id);
+        //获取订单详情
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+//        List<ShoppingCart> shoppingCartList = new ArrayList<>();
+//        orderDetailList.forEach(orderDetail -> {
+//            //转换成购物车对象
+//            ShoppingCart cart = new ShoppingCart();
+//            BeanUtils.copyProperties(orderDetail,cart,"id");
+//            cart.setUserId(userId);
+//            cart.setCreateTime(LocalDateTime.now());
+//            shoppingCartList.add(cart);
+//        });
+
+        //用java8的steam流
+        List<ShoppingCart> shoppingCartList = orderDetailList.stream().map(orderDetail -> {
+            ShoppingCart shoppingCart = new ShoppingCart();
+            BeanUtils.copyProperties(orderDetail,shoppingCart,"id");
+            shoppingCart.setUserId(userId);
+            shoppingCart.setCreateTime(LocalDateTime.now());
+            return shoppingCart;
+        }).collect(Collectors.toList());
+
+        //批量插入
+        shoppingCartMapper.insertBatch(shoppingCartList);
+
     }
 }
