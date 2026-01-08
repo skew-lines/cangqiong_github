@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
@@ -17,6 +18,7 @@ import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import lombok.extern.slf4j.Slf4j;
@@ -330,5 +332,15 @@ public class OrderServiceImpl implements OrderService {
 
         // 将该订单对应的所有菜品信息拼接在一起
         return String.join("", orderDishList);
+    }
+
+    /**
+     * 各个状态的订单数量统计
+     * @return
+     */
+    public OrderStatisticsVO statistics() {
+        OrderStatisticsVO orderStatisticsVO = orderMapper.getByStatus();
+        System.out.println(orderStatisticsVO);
+        return orderStatisticsVO;
     }
 }

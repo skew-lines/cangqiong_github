@@ -2,6 +2,7 @@ package com.sky.mapper;
 
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
+import com.sky.vo.OrderStatisticsVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -42,4 +43,13 @@ public interface OrderMapper {
      */
     @Select("select * from orders where id = #{id}")
     Orders getById(Long id);
+
+    /**
+     * 各个状态的订单数量统计
+     * @return
+     */
+    @Select(
+            "select sum(case status when ${@com.sky.entity.Orders@TO_BE_CONFIRMED} then 1 else 0 end) as toBeConfirmed, sum(case status when ${@com.sky.entity.Orders@CONFIRMED} then 1 else 0 end) as confirmed, sum(case status when ${@com.sky.entity.Orders@DELIVERY_IN_PROGRESS} then 1 else 0 end) as deliveryInProgress from orders where status in (${@com.sky.entity.Orders@TO_BE_CONFIRMED},${@com.sky.entity.Orders@CONFIRMED},${@com.sky.entity.Orders@DELIVERY_IN_PROGRESS})"
+    )
+    OrderStatisticsVO getByStatus();
 }
