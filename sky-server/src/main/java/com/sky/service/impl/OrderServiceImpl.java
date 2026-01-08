@@ -1,6 +1,7 @@
 package com.sky.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
@@ -23,6 +24,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -178,7 +180,7 @@ public class OrderServiceImpl implements OrderService {
         //拦截查询
         PageHelper.startPage(page,pageSize);
         //查询
-        List<Orders> ordersList = orderMapper.pageQuery(ordersPageQueryDTO);
+        Page<Orders> ordersList = (Page<Orders>) orderMapper.pageQuery(ordersPageQueryDTO);
         List<OrderVO> list = new ArrayList<>();
         for(Orders orders : ordersList) {
             OrderVO orderVO = new OrderVO();
@@ -187,7 +189,7 @@ public class OrderServiceImpl implements OrderService {
             orderVO.setOrderDetailList(orderDetailList);
             list.add(orderVO);
         }
-        return new PageResult(list.size(),list);
+        return new PageResult(ordersList.getTotal(),list);
     }
 
     /**
@@ -272,5 +274,61 @@ public class OrderServiceImpl implements OrderService {
         //批量插入
         shoppingCartMapper.insertBatch(shoppingCartList);
 
+    }
+
+    /**
+     * 订单搜索
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+        //拦截查询
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        //获取订单数据
+        Page<Orders> ordersList = (Page<Orders>) orderMapper.pageQuery(ordersPageQueryDTO);
+        //封装VO
+        List<OrderVO> orderVOList = getOrderVOList(ordersList);
+        return new PageResult(ordersList.getTotal(),orderVOList);
+    }
+
+    //封装VO
+    private List<OrderVO> getOrderVOList(Page<Orders> page) {
+        // 需要返回订单菜品信息，自定义OrderVO响应结果
+        List<OrderVO> orderVOList = new ArrayList<>();
+
+        List<Orders> ordersList = page.getResult();
+        if (!CollectionUtils.isEmpty(ordersList)) {
+            for (Orders orders : ordersList) {
+                // 将共同字段复制到OrderVO
+                OrderVO orderVO = new OrderVO();
+                BeanUtils.copyProperties(orders, orderVO);
+                String orderDishes = getOrderDishesStr(orders);
+
+                // 将订单菜品信息封装到orderVO中，并添加到orderVOList
+                orderVO.setOrderDishes(orderDishes);
+                orderVOList.add(orderVO);
+            }
+        }
+        return orderVOList;
+    }
+
+    /**
+     * 根据订单id获取菜品信息字符串
+     *
+     * @param orders
+     * @return
+     */
+    private String getOrderDishesStr(Orders orders) {
+        // 查询订单菜品详情信息（订单中的菜品和数量）
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+
+        // 将每一条订单菜品信息拼接为字符串（格式：宫保鸡丁*3；）
+        List<String> orderDishList = orderDetailList.stream().map(x -> {
+            String orderDish = x.getName() + "*" + x.getNumber() + ";";
+            return orderDish;
+        }).collect(Collectors.toList());
+
+        // 将该订单对应的所有菜品信息拼接在一起
+        return String.join("", orderDishList);
     }
 }
