@@ -357,7 +357,7 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
     public OrderStatisticsVO statistics() {
-        OrderStatisticsVO orderStatisticsVO = orderMapper.getByStatus();
+        OrderStatisticsVO orderStatisticsVO = orderMapper.countByStatus();
         return orderStatisticsVO;
     }
 

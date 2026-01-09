@@ -4,8 +4,10 @@ import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
 import com.sky.vo.OrderStatisticsVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -51,5 +53,22 @@ public interface OrderMapper {
     @Select(
             "select sum(case status when ${@com.sky.entity.Orders@TO_BE_CONFIRMED} then 1 else 0 end) as toBeConfirmed, sum(case status when ${@com.sky.entity.Orders@CONFIRMED} then 1 else 0 end) as confirmed, sum(case status when ${@com.sky.entity.Orders@DELIVERY_IN_PROGRESS} then 1 else 0 end) as deliveryInProgress from orders where status in (${@com.sky.entity.Orders@TO_BE_CONFIRMED},${@com.sky.entity.Orders@CONFIRMED},${@com.sky.entity.Orders@DELIVERY_IN_PROGRESS})"
     )
-    OrderStatisticsVO getByStatus();
+    OrderStatisticsVO countByStatus();
+
+    /**
+     * 根据订单状态跟下单时间查询订单
+     * @param status
+     * @param orderTime
+     * @return
+     */
+    @Select("select * from orders where status = #{status} and order_time < #{orderTime}")
+    List<Orders> getByStatusAndOrderTimeLT(@Param("status") Integer status, @Param("orderTime") LocalDateTime orderTime);
+
+    /**
+     * 根据订单状态跟下单时间查询订单
+     * @param status
+     * @return
+     */
+    @Select("select * from orders where status = #{status} and order_time >= #{begin} and order_time < #{end}")
+    List<Orders> getByStatusAndOrderTime(@Param("status")Integer status, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
 }
