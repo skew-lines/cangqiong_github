@@ -562,4 +562,32 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderBusinessException("超出配送范围");
         }
     }
+
+
+    /**
+     * 用户催单
+     * @param id
+     */
+    public void reminder(Long id) {
+        Orders orders = orderMapper.getById(id);
+        //如果订单不存在
+        if(orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        //如果订单不为待接单
+        if(orders.getStatus() != Orders.TO_BE_CONFIRMED) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        //通过websocket向管理端发送催单提醒
+        Map map = new HashMap();
+        map.put("type", 2); //1为来单提醒，2为客户催单
+        map.put("orderId", id);//订单id
+        map.put("content", "订单号" + orders.getNumber());//消息内容
+
+        String jsonString = JSON.toJSONString(map);
+
+        webSocketServer.sendToAllClient(jsonString);
+
+    }
 }
