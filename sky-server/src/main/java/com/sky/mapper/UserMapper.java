@@ -1,11 +1,12 @@
 package com.sky.mapper;
 
 import com.sky.entity.User;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Select;
-import org.springframework.stereotype.Service;
+import com.sky.vo.DailyUserCountVO;
+import com.sky.vo.TotalUserCountVO;
+import org.apache.ibatis.annotations.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Mapper
 public interface UserMapper {
@@ -34,4 +35,20 @@ public interface UserMapper {
      */
     @Select("select * from user where id = #{userId}")
     User getById(Long userId);
+
+    /**
+     * 根据开始时间和结束时间统计每一天的新用户（当天注册）个数 [)
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Select("select DATE(create_time) date, count(*) as count from `user` where create_time >= #{begin} and create_time < #{end} group by date ")
+    List<DailyUserCountVO> getByBeginAndEnd(@Param("begin") LocalDateTime begin, @Param("end")LocalDateTime end);
+
+    /**
+     * 截止到结束时间的每一天的总用户数,)
+     * @param end
+     * @return
+     */
+    List<TotalUserCountVO> getToEndTime(LocalDateTime end);
 }

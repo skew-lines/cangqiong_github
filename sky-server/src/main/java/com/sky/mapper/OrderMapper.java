@@ -74,7 +74,7 @@ public interface OrderMapper {
     List<Orders> getByStatusAndOrderTime(@Param("status")Integer status, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
 
     /**
-     * 根据状态，开始时间和结束时间统计订单金额，[begin,end)
+     * 根据状态，开始时间和结束时间统计每一天的订单金额，[begin,end)
      * @return
      */
     @Select("select DATE(order_time) as date, sum(amount) as turnover from orders where order_time >= #{begin} and order_time < #{end} and status = #{status} group by DATE (order_time) order by date")
