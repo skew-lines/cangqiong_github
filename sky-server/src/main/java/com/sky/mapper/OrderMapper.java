@@ -2,6 +2,7 @@ package com.sky.mapper;
 
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
+import com.sky.vo.DailyTurnoverVO;
 import com.sky.vo.OrderStatisticsVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -71,4 +72,11 @@ public interface OrderMapper {
      */
     @Select("select * from orders where status = #{status} and order_time >= #{begin} and order_time < #{end}")
     List<Orders> getByStatusAndOrderTime(@Param("status")Integer status, @Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
+
+    /**
+     * 根据状态，开始时间和结束时间统计订单金额，[begin,end)
+     * @return
+     */
+    @Select("select DATE(order_time) as date, sum(amount) as turnover from orders where order_time >= #{begin} and order_time < #{end} and status = #{status} group by DATE (order_time) order by date")
+    List<DailyTurnoverVO> getByBeginAndEnd(@Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end, @Param("status") Integer status);
 }
