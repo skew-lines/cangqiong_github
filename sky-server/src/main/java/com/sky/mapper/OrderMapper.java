@@ -2,6 +2,8 @@ package com.sky.mapper;
 
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
+import com.sky.vo.DailyCompletionOrderNumberVO;
+import com.sky.vo.DailyOrderNumberVO;
 import com.sky.vo.DailyTurnoverVO;
 import com.sky.vo.OrderStatisticsVO;
 import org.apache.ibatis.annotations.Mapper;
@@ -79,4 +81,24 @@ public interface OrderMapper {
      */
     @Select("select DATE(order_time) as date, sum(amount) as turnover from orders where order_time >= #{begin} and order_time < #{end} and status = #{status} group by DATE (order_time) order by date")
     List<DailyTurnoverVO> getByBeginAndEnd(@Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end, @Param("status") Integer status);
+
+    /**
+     * 根据开始时间和结束时间统计每一天的所有订单数
+     *
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Select("select DATE(order_time) as date, count(*) as totalNumber from orders where order_time >= #{begin} and order_time < #{end} group by date order by date")
+    List<DailyOrderNumberVO> getNumberByBeginAndEnd(@Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
+
+    /**
+     * 根据状态，开始时间和结束时间统计每一天的订单数
+     * @param begin
+     * @param end
+     * @param status
+     * @return
+     */
+    @Select("select DATE(order_time) as date, count(*) as completionNumber from orders where order_time >= #{begin} and order_time < #{end} and status = #{status} group by date order by date")
+    List<DailyCompletionOrderNumberVO> getCompletionNumberByBeginAndEnd(@Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end, @Param("status") Integer status);
 }
