@@ -3,6 +3,7 @@ package com.sky.controller.admin;
 import com.sky.result.Result;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import io.swagger.annotations.Api;
@@ -100,6 +101,33 @@ public class ReportController {
         OrderReportVO orderReportVO = reportService.ordersStatistics(begin,end);
         return Result.success(orderReportVO);
     }
+
+    /**
+     * 查询销量排名top10接口
+     * @param begin
+     * @param end
+     * @return
+     */
+    @GetMapping("/top10")
+    @ApiOperation("查询销量排名top10接口")
+    public Result<SalesTop10ReportVO> topTenStatistics(
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
+            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate end)
+    {
+        log.info("查询销量排名top10接口：{} - {}",begin,end);
+        //时间日期校验
+        if(begin == null || end == null) {
+            return Result.error("开始日期和结束日期不能为空");
+        }
+        if(begin.isAfter(end)) {
+            return Result.error("开始日期不能大于结束日期");
+        }
+        //业务逻辑处理
+        SalesTop10ReportVO salesTop10ReportVO = reportService.topTenStatistics(begin,end);
+        return Result.success(salesTop10ReportVO);
+    }
+
+
 
 
 }

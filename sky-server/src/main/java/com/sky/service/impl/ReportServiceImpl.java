@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
@@ -181,5 +182,28 @@ public class ReportServiceImpl implements ReportService {
 
 
         return orderReportVO;
+    }
+
+    /**
+     * 查询销量排名top10接口
+     * @param begin
+     * @param end
+     * @return
+     */
+    public SalesTop10ReportVO topTenStatistics(LocalDate begin, LocalDate end) {
+        LocalDateTime beginTime = begin.atStartOfDay(); //转化成当天的localdatetime
+        LocalDateTime endTime = end.plusDays(1).atStartOfDay(); //转换成end+1天的0:0:0
+        List<GoodsSalesDTO> goodsSalesDTOList = orderMapper.getSalesTop(beginTime,endTime);
+
+        //构建列表
+        List<String> nameList = goodsSalesDTOList.stream().map(GoodsSalesDTO::getName).collect(Collectors.toList());
+        List<Integer> numberList = goodsSalesDTOList.stream().map(GoodsSalesDTO::getNumber).collect(Collectors.toList());
+
+        //封装数据
+        SalesTop10ReportVO salesTop10ReportVO = new SalesTop10ReportVO();
+        salesTop10ReportVO.setNameList(StringUtils.join(nameList,","));
+        salesTop10ReportVO.setNumberList(StringUtils.join(numberList,","));
+
+        return salesTop10ReportVO;
     }
 }

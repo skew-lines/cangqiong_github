@@ -1,5 +1,6 @@
 package com.sky.mapper;
 
+import com.sky.dto.GoodsSalesDTO;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
 import com.sky.vo.DailyCompletionOrderNumberVO;
@@ -101,4 +102,12 @@ public interface OrderMapper {
      */
     @Select("select DATE(order_time) as date, count(*) as completionNumber from orders where order_time >= #{begin} and order_time < #{end} and status = #{status} group by date order by date")
     List<DailyCompletionOrderNumberVO> getCompletionNumberByBeginAndEnd(@Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end, @Param("status") Integer status);
+
+    /**
+     * 查询销量排名top10
+     * @param begin
+     * @param end
+     * @return
+     */
+    List<GoodsSalesDTO> getSalesTop(@Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
 }
