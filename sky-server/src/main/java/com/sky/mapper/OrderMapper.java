@@ -13,6 +13,7 @@ import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface OrderMapper {
@@ -110,4 +111,17 @@ public interface OrderMapper {
      * @return
      */
     List<GoodsSalesDTO> getSalesTop(@Param("begin") LocalDateTime begin, @Param("end") LocalDateTime end);
+
+    /**
+     *根据动态条件统计订单数量
+     * @param map
+     */
+    Integer countByMap(Map map);
+
+    /**
+     * 根据动态条件统计营业额
+     * @param map
+     */
+    Double sumByMap(Map map);
+
 }
